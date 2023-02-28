@@ -22,9 +22,43 @@ public class AuthController : Controller
         { 
             ModelState.AddModelError("", "Token exist please choose another!");
         }
-        
-        WTelegram.Client client = new WTelegram.Client(tokenDtOs.API_ID, tokenDtOs.API_HASH); // this constructor doesn't need a Config method
-        await client.Login(phoneNumber.ToString());
+
+        using (WTelegram.Client
+               client = new WTelegram.Client(tokenDtOs.API_ID,
+                   tokenDtOs.API_HASH)) // this constructor doesn't need a Config method
+        {
+            try
+            {
+                await DoLoginNow(phoneNumber.ToString());
+
+                async Task DoLoginNow(string loginInfo) // (add this method to your code)
+                {
+                    while (client.User == null)
+                        switch (await client.Login(loginInfo)) // returns which config is needed to continue login
+                        {
+                            case "verification_code":
+                                Console.Write("Code: ");
+                                loginInfo = "";
+                                break;
+                            case "name":
+                                loginInfo = "John Doe";
+                                break; // if sign-up is required (first/last_name)
+                            case "password":
+                                loginInfo = "secret!";
+                                break; // if user has enabled 2FA
+                            default:
+                                loginInfo = null;
+                                break;
+                        }
+
+                    Console.WriteLine($"We are logged-in as {client.User} (id {client.User.id})");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
 
         var token = new Token()
         {
@@ -72,8 +106,12 @@ public class AuthController : Controller
         
         WTelegram.Client client = new WTelegram.Client(token.API_ID, token.API_HASH); // this constructor doesn't need a Config method
         await client.Login(phoneNumber.ToString()); // initial call with user's phone_number
-        
-        
+        using (var w = new WTelegram.Client())
+        {
+            await client.Login(phoneNumber.ToString());
+        }
+
+        return Ok(token);
     }
     
     private async Task DoLogin(string loginInfo, WTelegram.Client client, string verificationCode) // (add this method to your code)
