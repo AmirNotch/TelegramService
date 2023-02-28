@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "caQk2ib7BVwHXu1U5ZSM3fFfrBFEuCyyM8fm66YBy1k=",
+  "Source": "TelegramService",
+  "BasePath": "_content/TelegramService",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
