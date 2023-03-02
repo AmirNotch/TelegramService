@@ -16,11 +16,15 @@ public class AuthController : Controller
     }
     
     [HttpPost("register/{phoneNumber}")]
+    [ProducesResponseType(204)] // no content
+    [ProducesResponseType(400)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(200, Type = typeof(Token))]
     public async Task<IActionResult> CreateTelegram([FromRoute]long phoneNumber,[FromBody]TokenDTOs tokenDtOs)
     {
         if(_authRepository.TokenExists(tokenDtOs.API_ID, tokenDtOs.API_HASH))
-        { 
-            ModelState.AddModelError("", "Token exist please choose another!");
+        {
+            return BadRequest("Token exist please choose another!");
         }
 
         using (WTelegram.Client
@@ -85,13 +89,14 @@ public class AuthController : Controller
         }
 
         var token = _authRepository.GetToken(phoneNumber);
-    
-        WTelegram.Client client = new WTelegram.Client(token.API_ID, token.API_HASH); // this constructor doesn't need a Config method
 
-        await DoLogin(token.PhoneNumber.ToString(), client, verificationCode); // initial call with user's phone_number
-        
+        using (WTelegram.Client client = new WTelegram.Client(token.API_ID, token.API_HASH)) // this constructor doesn't need a Config method
+        {
+            
+            await DoLogin(token.PhoneNumber.ToString(), client, verificationCode); // initial call with user's phone_number
+        }
 
-        return Ok($"You successfully verified, you are logged-in as {client.User} (phone {client.User.phone})");
+        return Ok(token);
     }
 
     [HttpPost("login/{phoneNumber}")]
@@ -104,11 +109,10 @@ public class AuthController : Controller
         
         var token = _authRepository.GetToken(phoneNumber);
         
-        WTelegram.Client client = new WTelegram.Client(token.API_ID, token.API_HASH); // this constructor doesn't need a Config method
-        await client.Login(phoneNumber.ToString()); // initial call with user's phone_number
-        using (var w = new WTelegram.Client())
+        
+        using (WTelegram.Client client = new WTelegram.Client(token.API_ID, token.API_HASH)) // this constructor doesn't need a Config method)
         {
-            await client.Login(phoneNumber.ToString());
+            await client.Login(phoneNumber.ToString()); // initial call with user's phone_number
         }
 
         return Ok(token);

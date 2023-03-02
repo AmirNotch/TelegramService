@@ -19,7 +19,7 @@ namespace TelegramService
         {
             services.AddDbContext<DataContext>(opt => { opt.UseSqlServer(_config.GetConnectionString("Default")); });
 
-            services.AddControllers();
+            services.AddControllers(options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "TelegramService", Version = "v1"});
