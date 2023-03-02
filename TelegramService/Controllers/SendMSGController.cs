@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
+using System.Reflection;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
 using TelegramService.IServices;
@@ -21,11 +22,11 @@ public class SendMSGController : Controller
     [HttpPost("sendTextMsgToPhone/{fromPhoneNumber}/{toPhoneNumber}")]
     public async Task<IActionResult> SendTextMSG([FromRoute]long fromPhoneNumber, long toPhoneNumber, [FromBody]MessageText textMSG)
     {
-        // if (!_authRepository.TokenExists(fromPhoneNumber))
-        // {
-        //     return NotFound();
-        // }
-        
+        if (!CheckAuth())
+        {
+            return BadRequest("You are not authorized");
+        }
+
         var token = _authRepository.GetToken(fromPhoneNumber);
         
         if (token == null)
@@ -60,10 +61,10 @@ public class SendMSGController : Controller
     [HttpPost("sendTextMsgToUserName/{fromPhoneNumber}/{userName}")]
     public async Task<IActionResult> SendTextMSG([FromRoute]long fromPhoneNumber, string userName, [FromBody]MessageText textMSG)
     {
-        // if (!_authRepository.TokenExists(fromPhoneNumber))
-        // {
-        //     return NotFound();
-        // }
+        if (!CheckAuth())
+        {
+            return BadRequest("You are not authorized");
+        }
         
         var token = _authRepository.GetToken(fromPhoneNumber);
         
@@ -94,12 +95,18 @@ public class SendMSGController : Controller
         return Ok();
     }
     
+    // POST
     [HttpPost("sendMediaMsgToPhone/{fromPhoneNumber}/{toPhoneNumber}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UploadFile(IFormFile file, CancellationToken cancellationToken,
         [FromRoute]long fromPhoneNumber, long toPhoneNumber, string text = "")
     {
+        if (!CheckAuth())
+        {
+            return BadRequest("You are not authorized");
+        }
+        
         var token = _authRepository.GetToken(fromPhoneNumber);
         
         if (token == null)
@@ -185,12 +192,20 @@ public class SendMSGController : Controller
 /// <param name="userName"></param>
 /// <param name="text"></param>
 /// <returns></returns>
+
+
+    // POST
     [HttpPost("sendMediaMsgToUserName/{fromPhoneNumber}/{userName}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UploadFile(IFormFile file, CancellationToken cancellationToken,
         [FromRoute]long fromPhoneNumber, string userName, string text = "")
     {
+        if (!CheckAuth())
+        {
+            return BadRequest("You are not authorized");
+        }
+        
         var token = _authRepository.GetToken(fromPhoneNumber);
         
         if (token == null)
@@ -265,5 +280,23 @@ public class SendMSGController : Controller
         }
 
         return isSaveSuccess;
-    } 
+    }
+
+    private bool CheckAuth()
+    {
+        string deleteFileSession = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+        string path = deleteFileSession;
+        path = path.Remove(path.LastIndexOf("\\"));
+        path = path.Remove(path.LastIndexOf("\\"));
+
+        if (System.IO.File.Exists(path + "\\WTelegram.session"))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 }
