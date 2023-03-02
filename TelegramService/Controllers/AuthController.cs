@@ -1,7 +1,10 @@
-﻿using Domain;
+﻿using System.Reflection;
+using Domain;
 using Microsoft.AspNetCore.Mvc;
 using TelegramService.DTOs;
 using TelegramService.IServices;
+using System.Linq;
+using System.IO;
 
 namespace TelegramService.Controllers;
 [ApiController]
@@ -117,7 +120,28 @@ public class AuthController : Controller
 
         return Ok(token);
     }
-    
+
+    [HttpPost("LogOutSession")]
+    public async Task<IActionResult> LogOut()
+    {
+        string deleteFileSession = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+        string path = deleteFileSession;
+        path = path.Remove(path.LastIndexOf("\\"));
+        path = path.Remove(path.LastIndexOf("\\"));
+
+        if (System.IO.File.Exists(path + "\\WTelegram.session"))
+        {
+            System.IO.File.Delete(path + "\\WTelegram.session");
+        }
+        else
+        {
+            return BadRequest("You are not authorized");
+        }
+
+        return Ok();
+    }
+
     private async Task DoLogin(string loginInfo, WTelegram.Client client, string verificationCode) // (add this method to your code)
     {
         while (client.User == null)
