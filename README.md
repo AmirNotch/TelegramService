@@ -15,6 +15,8 @@
 
 Отправлять можно файлы либо картинки давая им определённое название либо оставляя пустым.
 
+![image](https://user-images.githubusercontent.com/69799846/222652896-6974e646-1ec0-4a29-8f7e-fa4aa30b0d24.png)
+
 ![image](https://user-images.githubusercontent.com/69799846/222649826-2ff84bdd-4319-4613-aaf8-6de73a323f85.png)
 ![image](https://user-images.githubusercontent.com/69799846/222649872-a7202639-ca60-46a6-b31b-0688b47f1b8e.png)
 ![image](https://user-images.githubusercontent.com/69799846/222649925-2c643a96-3b08-4970-8d1d-2083b05507ac.png)
