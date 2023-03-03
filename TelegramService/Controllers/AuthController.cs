@@ -86,6 +86,11 @@ public class AuthController : Controller
     [HttpPost("verify/{verificationCode}/{phoneNumber}")]
     public async Task<IActionResult> VerificateToken([FromRoute]string verificationCode, long phoneNumber)
     {
+        if (!CheckAuth())
+        {
+            return BadRequest("Please do login procedure!");
+        }
+        
         if (!_authRepository.TokenExists(phoneNumber))
         {
             return NotFound();
@@ -153,5 +158,23 @@ public class AuthController : Controller
                 default: loginInfo = null; break;
             }
         Console.WriteLine($"We are logged-in as {client.User} (id {client.User.id})");
+    }
+    
+    private bool CheckAuth()
+    {
+        string deleteFileSession = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+        string path = deleteFileSession;
+        path = path.Remove(path.LastIndexOf("\\"));
+        path = path.Remove(path.LastIndexOf("\\"));
+
+        if (System.IO.File.Exists(path + "\\WTelegram.session"))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }
